@@ -277,6 +277,14 @@
         let gameOpen = false;
         let ignorePop = false;
 
+        // ФУНКЦИЯ ШИФРОВАНИЯ ПАРОЛЯ (SHA-256)
+        async function hashPassword(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         function loadGuestState() {
             balance = parseInt(localStorage.getItem('ludara_guest_balance') || '0', 10);
             owned = JSON.parse(localStorage.getItem('ludara_guest_owned') || '[]');
@@ -361,6 +369,9 @@
             document.getElementById('auth-submit').disabled = true;
 
             try {
+                // ШИФРУЕМ ПАРОЛЬ ПЕРЕД ОТПРАВКОЙ
+                const hashedPassword = await hashPassword(password);
+
                 // ================= РЕГИСТРАЦИЯ =================
                 if (authMode === 'register') {
                     const { data: existing, error: checkError } = await supabaseClient.from('users').select('id').eq('username', username).maybeSingle();
@@ -379,10 +390,9 @@
                         return; 
                     }
                     
-                    // Создаем пользователя и СРАЗУ берем его данные
                     const { data: newUser, error: insertError } = await supabaseClient
                         .from('users')
-                        .insert([{ username, password, balance: 0, owned: [], last_claim: 0 }])
+                        .insert([{ username, password: hashedPassword, balance: 0, owned: [], last_claim: 0 }])
                         .select()
                         .single();
 
@@ -392,8 +402,6 @@
                         document.getElementById('auth-submit').disabled = false;
                         return;
                     }
-
-                    // Если дошли сюда, значит регистрация прошла успешно
                     currentUser = newUser;
                 } 
                 // ================= ВХОД =================
@@ -402,7 +410,7 @@
                         .from('users')
                         .select('*')
                         .eq('username', username)
-                        .eq('password', password)
+                        .eq('password', hashedPassword) // ИЩЕМ ЗАШИФРОВАННЫЙ ПАРОЛЬ
                         .maybeSingle();
 
                     if (error) {
@@ -417,11 +425,9 @@
                         document.getElementById('auth-submit').disabled = false; 
                         return; 
                     }
-                    
                     currentUser = data;
                 }
 
-                // === ЕСЛИ МЫ ЗДЕСЬ, ЗНАЧИТ ВСЕ ОК (И РЕГИСТРАЦИЯ, И ВХОД) ===
                 balance = currentUser.balance || 0;
                 owned = currentUser.owned || [];
                 lastClaim = currentUser.last_claim || 0;
