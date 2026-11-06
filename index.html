@@ -273,16 +273,16 @@
             { 
                 id: 'moomoo', 
                 title: 'MooMoo.io', 
-                desc: 'Выживай, собирай ресурсы, строй базы и сражайся с другими игроками в этой динамичной .io игре.', 
-                image: 'moomoo.jpg', 
+                desc: 'Выживай на бескрайних просторах, собирай ресурсы, строй базу и сражайся с другими игроками.', 
+                image: 'moomoo.jpg',
                 url: 'https://moomoo.io/' 
             },
             { 
                 id: 'geometrydash', 
                 title: 'Geometry Dash Demo', 
                 desc: 'Ритм-платформер, где нужно прыгать по шипам в такт музыке. Один неверный тап — и ты начинаешь заново.', 
-                image: 'geometrydash.jpg', 
-                url: 'https://www.geometrydash.com/' 
+                image: 'geometrydash.jpg',
+                url: 'https://geometrydash.io/' 
             }
         ];
 
@@ -297,7 +297,8 @@
         let loadTimer = null;
         let gameOpen = false;
         let ignorePop = false;
-        let currentGameUrl = '';
+        let currentGameUrl = ''; 
+        let currentGameId = '';
 
         async function api(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
@@ -570,6 +571,7 @@
             const game = games.find(g => g.id === id);
             if (!game) return;
 
+            currentGameId = id;
             currentGameUrl = game.url;
             document.getElementById('game-detail-title').innerText = game.title;
             document.getElementById('game-detail-desc').innerText = game.desc;
@@ -590,7 +592,7 @@
             const list = document.getElementById('comments-list');
             list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Загрузка...</p>';
             try {
-                const data = await api('comments');
+                const data = await api('comments?gameId=' + encodeURIComponent(currentGameId));
                 if (!data || data.length === 0) { list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Пока нет отзывов. Будь первым!</p>'; return; }
                 list.innerHTML = data.map(c => `
                     <div class="comment-item">
@@ -605,7 +607,7 @@
             const txt = document.getElementById('comment-text').value.trim();
             if (!txt) return showToast('Введите текст!');
             try {
-                await api('comments', { method: 'POST', body: JSON.stringify({ text: txt }) });
+                await api('comments', { method: 'POST', body: JSON.stringify({ text: txt, gameId: currentGameId }) });
                 document.getElementById('comment-text').value = '';
                 loadComments(); showToast('Отзыв добавлен!');
             } catch (e) { showToast(e.message); }
