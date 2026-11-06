@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -44,20 +43,10 @@
         .btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; text-align: center; }
         .btn:disabled { background: #1f293d; color: var(--text-muted); cursor: not-allowed; }
         
-        /* ЛАУНЧЕР И IFREME: Максимальная защита от вибраций и меню */
-        #launcher-overlay { 
-            display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; 
-            background: #000; z-index: 9999; 
-            touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; 
-        }
+        /* Лаунчер */
+        #launcher-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 9999; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #launcher-overlay.open { display: block; }
-        
-        #launcher-iframe { 
-            width: 100%; height: 100%; border: none; 
-            user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; 
-            pointer-events: auto;
-        }
-        
+        #launcher-iframe { width: 100%; height: 100%; border: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #exit-gesture-zone { position: absolute; top: 0; left: 0; right: 0; height: 22px; z-index: 10001; background: transparent; touch-action: manipulation; }
         
         .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: white; padding: 20px; }
@@ -146,15 +135,9 @@
             setTimeout(done, 2800);
         })();
 
-        // ЖЕСТКАЯ БЛОКИРОВКА ВИБРАЦИИ И МЕНЮ НА УРОВНЕ БРАУЗЕРА
-        window.navigator.vibrate = function() { return false; }; // Отключаем вибрацию API
-        document.addEventListener('contextmenu', event => event.preventDefault()); // Отключаем меню по долгому тапу
-        document.addEventListener('selectstart', event => event.preventDefault()); // Отключаем выделение текста
-        document.addEventListener('touchstart', e => { // Предотвращаем стандартные действия
-            if (e.target.tagName === 'IFRAME' || e.target.closest('#launcher-overlay')) {
-                // Оставляем клики для игры, но блокируем системные жесты браузера
-            }
-        }, { passive: false });
+        window.navigator.vibrate = function() { return false; };
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('selectstart', event => event.preventDefault());
     </script>
 
     <div id="auth-screen">
@@ -379,16 +362,60 @@
             document.getElementById('auth-submit').disabled = true;
 
             try {
+                let userData = null;
+
                 if (authMode === 'register') {
-                    const { data: existing } = await supabaseClient.from('users').select('id').eq('username', username).maybeSingle();
-                    if (existing) { errEl.innerText = 'Этот никнейм занят'; document.getElementById('auth-submit').innerText = 'Зарегистрироваться'; document.getElementById('auth-submit').disabled = false; return; }
-                    await supabaseClient.from('users').insert([{ username, password, balance: 0, owned: [], last_claim: 0 }]);
+                    const { data: existing, error: checkError } = await supabaseClient.from('users').select('id').eq('username', username).maybeSingle();
+                    if (checkError) {
+                        errEl.innerText = 'Ошибка проверки: ' + checkError.message;
+                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
+                        document.getElementById('auth-submit').disabled = false;
+                        return;
+                    }
+                    if (existing) { 
+                        errEl.innerText = 'Этот никнейм занят'; 
+                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться'; 
+                        document.getElementById('auth-submit').disabled = false; 
+                        return; 
+                    }
+                    
+                    const { data: newUser, error: insertError } = await supabaseClient
+                        .from('users')
+                        .insert([{ username, password, balance: 0, owned: [], last_claim: 0 }])
+                        .select()
+                        .single();
+
+                    if (insertError) {
+                        errEl.innerText = 'Ошибка регистрации: ' + insertError.message;
+                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
+                        document.getElementById('auth-submit').disabled = false;
+                        return;
+                    }
+                    userData = newUser;
+                } else {
+                    const { data, error } = await supabaseClient
+                        .from('users')
+                        .select('*')
+                        .eq('username', username)
+                        .eq('password', password)
+                        .maybeSingle();
+
+                    if (error) {
+                        errEl.innerText = 'Ошибка БД: ' + error.message;
+                        document.getElementById('auth-submit').innerText = 'Войти';
+                        document.getElementById('auth-submit').disabled = false;
+                        return;
+                    }
+                    if (!data) { 
+                        errEl.innerText = 'Неверный ник или пароль'; 
+                        document.getElementById('auth-submit').innerText = 'Войти'; 
+                        document.getElementById('auth-submit').disabled = false; 
+                        return; 
+                    }
+                    userData = data;
                 }
 
-                const { data, error } = await supabaseClient.from('users').select('*').eq('username', username).eq('password', password).maybeSingle();
-                if (error || !data) { errEl.innerText = 'Неверный ник или пароль'; document.getElementById('auth-submit').innerText = authMode === 'login' ? 'Войти' : 'Зарегистрироваться'; document.getElementById('auth-submit').disabled = false; return; }
-
-                currentUser = data;
+                currentUser = userData;
                 balance = currentUser.balance || 0;
                 owned = currentUser.owned || [];
                 lastClaim = currentUser.last_claim || 0;
@@ -397,10 +424,10 @@
                 localStorage.setItem('ludara_user', username);
                 hideAuth();
                 updateUI(); renderStore(); updateAuthUI();
-                showToast('Вы успешно вошли!');
+                showToast(authMode === 'register' ? 'Аккаунт создан!' : 'Вы успешно вошли!');
             } catch (e) {
-                errEl.innerText = 'Ошибка сети';
-                document.getElementById('auth-submit').innerText = 'Повторить';
+                errEl.innerText = 'Ошибка: ' + (e.message || 'неизвестно');
+                document.getElementById('auth-submit').innerText = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
                 document.getElementById('auth-submit').disabled = false;
             }
         }
