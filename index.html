@@ -85,6 +85,17 @@
         .comment-input-area textarea { width: 100%; background: #1e293b; border: 1px solid #334155; color: var(--text-main); padding: 10px; border-radius: 8px; resize: none; outline: none; }
         .comment-input-area textarea:focus { border-color: var(--accent); }
 
+        /* ЭКРАН ВХОДА / РЕГИСТРАЦИИ */
+        #auth-screen { position: fixed; inset: 0; z-index: 15000; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #auth-screen.hidden { display: none; }
+        .auth-box { width: 100%; max-width: 380px; background: var(--bg-card); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; box-shadow: 0 0 40px rgba(168,85,247,.35); }
+        .auth-title { font-size: 26px; font-weight: 900; text-align: center; margin-bottom: 20px; background: linear-gradient(45deg, var(--accent), #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-tabs { display: flex; margin-bottom: 20px; border-radius: 8px; overflow: hidden; background: #1e293b; }
+        .auth-tab { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer; color: var(--text-muted); }
+        .auth-tab.active { background: var(--accent); color: white; }
+        .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin-bottom: 10px; min-height: 18px; }
+        .logout-btn { background: #374151; margin-top: 15px; }
+
         #boot { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity .5s; }
         #boot.hide { opacity: 0; pointer-events: none; }
         .boot-logo-wrap { position: relative; overflow: hidden; padding: 10px 18px; animation: bootGlow 1s ease 1.5s both; }
@@ -109,6 +120,27 @@
             <div class="boot-logo"><span class="boot-g">L</span><span class="boot-rest">udara</span></div>
         </div>
         <div class="boot-bar"><i></i></div>
+    </div>
+
+    <!-- ЭКРАН ВХОДА -->
+    <div id="auth-screen" class="hidden">
+        <div class="auth-box">
+            <div class="auth-title">Ludara</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Вход</div>
+                <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Регистрация</div>
+            </div>
+            <div class="field">
+                <label>Никнейм</label>
+                <input id="auth-username" class="field-input" maxlength="20" placeholder="Твой ник" autocomplete="off">
+            </div>
+            <div class="field">
+                <label>Пароль</label>
+                <input id="auth-password" class="field-input" type="password" placeholder="Пароль" autocomplete="off">
+            </div>
+            <div class="auth-error" id="auth-error"></div>
+            <button class="btn" id="auth-submit" onclick="doAuth()">Войти</button>
+        </div>
     </div>
 
     <header>
@@ -147,7 +179,7 @@
                     </div>
                     <div>
                         <div class="prof-name" id="prof-name-display">Gamer_Nappy</div>
-                        <div class="prof-sub">Nappy Gamer</div>
+                        <div class="prof-sub">Игрок Ludara</div>
                     </div>
                 </div>
                 <div class="field">
@@ -159,6 +191,7 @@
                 <div class="stats">
                     <div class="stat-row"><span>Баланс NappyCoins</span><b><span id="prof-balance">0</span> NC</b></div>
                 </div>
+                <button class="btn logout-btn" onclick="logout()">Выйти из аккаунта</button>
             </div>
         </div>
         <div id="game-page" class="page">
@@ -200,7 +233,15 @@
         <div class="nav-item" id="tab-profile" onclick="switchTab('profile')">Профиль</div>
     </nav>
 
+    <!-- ПОДКЛЮЧЕНИЕ SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Твои ключи Supabase (уже вставлены)
+        const SUPABASE_URL = 'https://ifwwbiutqjzutzczzkzg.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmd3diaXV0cWp6dXR6Y3p6a3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MzU3NjAsImV4cCI6MjEwOTUxMTc2MH0.cbH4RDTn715eSB2uZgLPRyehl32ZEa7SpF-o6RRQ4tc';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const HQ_IMAGE = 'https://i.postimg.cc/RhqLK1PD/maxresdefault.jpg';
 
         const games = [{
@@ -209,57 +250,158 @@
             desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков, пей воду, ешь добычу и берегись хищников.'
         }];
 
-        const STATE_KEY = 'gh_state_v23';
+        let currentUser = null;
+        let authMode = 'login';
 
-        function defaultProfile() {
-            return { nickname: 'Gamer_Nappy', avatar: '' };
-        }
-
-        function loadState() {
-            let s = null;
-            try { s = JSON.parse(localStorage.getItem(STATE_KEY) || 'null'); } catch (e) { s = null; }
-
-            let legacyOwned = [];
-            try { legacyOwned = JSON.parse(localStorage.getItem('gh_owned') || '[]'); } catch (e) { legacyOwned = []; }
-            const legacyBalance = parseInt(localStorage.getItem('gh_balance') || '0', 10) || 0;
-            const legacyClaim = parseInt(localStorage.getItem('gh_last_claim') || '0', 10) || 0;
-
-            if (!s || typeof s !== 'object') {
-                s = { balance: legacyBalance, owned: legacyOwned, lastClaim: legacyClaim, profile: defaultProfile() };
-            }
-            if (typeof s.balance !== 'number') s.balance = legacyBalance;
-            if (!Array.isArray(s.owned)) s.owned = legacyOwned;
-            if (typeof s.lastClaim !== 'number') s.lastClaim = legacyClaim;
-            if (!s.profile || typeof s.profile !== 'object') s.profile = defaultProfile();
-            if (!s.profile.nickname) s.profile.nickname = 'Gamer_Nappy';
-            
-            if (s.profile.avatar && !s.profile.avatar.startsWith('data:image')) {
-                s.profile.avatar = '';
-            }
-            delete s.profile.maxEvolution;
-            
-            return s;
-        }
-
-        const _state = loadState();
-        let owned = _state.owned;
-        let balance = _state.balance;
-        let lastClaim = _state.lastClaim;
-        let profile = _state.profile;
+        let balance = 0;
+        let owned = [];
+        let lastClaim = 0;
+        let profile = { nickname: 'Gamer_Nappy', avatar: '' };
 
         let loadTimer = null;
         let gameOpen = false;
         let ignorePop = false;
 
-        function saveState() {
-            const payload = { balance: balance, owned: owned, lastClaim: lastClaim, profile: profile };
+        // =============== АВТОРИЗАЦИЯ ===============
+        function switchAuthTab(mode) {
+            authMode = mode;
+            document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+            document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+            document.getElementById('auth-submit').innerText = mode === 'login' ? 'Войти' : 'Зарегистрироваться';
+            document.getElementById('auth-error').innerText = '';
+        }
+
+        async function doAuth() {
+            const username = document.getElementById('auth-username').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const errEl = document.getElementById('auth-error');
+            errEl.innerText = '';
+
+            if (!username || !password) {
+                errEl.innerText = 'Заполни ник и пароль';
+                return;
+            }
+            if (username.length < 3) {
+                errEl.innerText = 'Ник минимум 3 символа';
+                return;
+            }
+            if (password.length < 3) {
+                errEl.innerText = 'Пароль минимум 3 символа';
+                return;
+            }
+
+            document.getElementById('auth-submit').innerText = 'Загрузка...';
+            document.getElementById('auth-submit').disabled = true;
+
             try {
-                localStorage.setItem(STATE_KEY, JSON.stringify(payload));
-                localStorage.setItem('gh_balance', JSON.stringify(balance));
-                localStorage.setItem('gh_owned', JSON.stringify(owned));
-                localStorage.setItem('gh_last_claim', JSON.stringify(lastClaim));
+                if (authMode === 'register') {
+                    const { data: existing } = await supabase
+                        .from('users')
+                        .select('id')
+                        .eq('username', username)
+                        .maybeSingle();
+
+                    if (existing) {
+                        errEl.innerText = 'Этот никнейм уже занят';
+                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
+                        document.getElementById('auth-submit').disabled = false;
+                        return;
+                    }
+
+                    const { error } = await supabase
+                        .from('users')
+                        .insert([{ username, password, balance: 0, owned: [], last_claim: 0 }]);
+
+                    if (error) {
+                        errEl.innerText = 'Ошибка регистрации';
+                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
+                        document.getElementById('auth-submit').disabled = false;
+                        return;
+                    }
+                }
+
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('username', username)
+                    .eq('password', password)
+                    .maybeSingle();
+
+                if (error || !data) {
+                    errEl.innerText = 'Неверный ник или пароль';
+                    document.getElementById('auth-submit').innerText = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+                    document.getElementById('auth-submit').disabled = false;
+                    return;
+                }
+
+                currentUser = data;
+                localStorage.setItem('ludara_user', username);
+                enterApp();
             } catch (e) {
-                showToast('Не удалось сохранить');
+                errEl.innerText = 'Ошибка сети';
+                document.getElementById('auth-submit').innerText = 'Повторить';
+                document.getElementById('auth-submit').disabled = false;
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('ludara_user');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+            document.getElementById('auth-submit').innerText = 'Войти';
+            document.getElementById('auth-submit').disabled = false;
+        }
+
+        async function enterApp() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            balance = currentUser.balance || 0;
+            owned = currentUser.owned || [];
+            lastClaim = currentUser.last_claim || 0;
+            profile.nickname = currentUser.username || 'Gamer_Nappy';
+            updateUI();
+            renderProfile();
+            renderStore();
+        }
+
+        async function tryAutoLogin() {
+            const savedUsername = localStorage.getItem('ludara_user');
+            if (!savedUsername) {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                return;
+            }
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('username', savedUsername)
+                    .maybeSingle();
+                if (data && !error) {
+                    currentUser = data;
+                    enterApp();
+                } else {
+                    document.getElementById('auth-screen').classList.remove('hidden');
+                }
+            } catch (e) {
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        }
+
+        // =============== ОСНОВНАЯ ЛОГИКА ===============
+        async function saveUser() {
+            if (!currentUser) return;
+            try {
+                await supabase
+                    .from('users')
+                    .update({
+                        balance: balance,
+                        owned: owned,
+                        last_claim: lastClaim
+                    })
+                    .eq('username', currentUser.username);
+            } catch (e) {
+                console.log('Save error', e);
             }
         }
 
@@ -284,9 +426,9 @@
             if (pb) pb.innerText = balance;
         }
 
-        function claimBonus() {
+        async function claimBonus() {
             balance += 10; lastClaim = Date.now();
-            saveState();
+            await saveUser();
             updateUI(); showToast('+10 NappyCoins успешно начислены!');
         }
 
@@ -344,9 +486,9 @@
             });
         }
 
-        function addToLib(id) {
+        async function addToLib(id) {
             if(!owned.includes(id)) owned.push(id);
-            saveState();
+            await saveUser();
             showToast('Добавлено в библиотеку!'); renderStore();
         }
 
@@ -374,11 +516,7 @@
         }
 
         function onNickInput(el) {
-            const cleanVal = (el.value || '').trim().slice(0, 20);
-            profile.nickname = cleanVal;
-            const nameDisp = document.getElementById('prof-name-display');
-            if (nameDisp) nameDisp.innerText = cleanVal || 'Gamer_Nappy';
-            saveState();
+            el.value = profile.nickname;
         }
 
         function handleAvatarUpload(inp) {
@@ -392,7 +530,6 @@
                     cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
                     cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
                     profile.avatar = cv.toDataURL('image/jpeg', 0.85);
-                    saveState(); 
                     renderProfile(); 
                     showToast('Фото профиля обновлено!');
                 } catch (e) { 
@@ -416,50 +553,54 @@
             loadComments();
         }
 
+        // =============== КОММЕНТАРИИ ===============
         async function loadComments() {
             const list = document.getElementById('comments-list');
             list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Загрузка...</p>';
             try {
-                const res = await fetch('/api/comments');
-                const data = await res.json();
-                if (data.length === 0) {
+                const { data, error } = await supabase
+                    .from('comments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
                     list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Пока нет отзывов. Будь первым!</p>';
                     return;
                 }
-                list.innerHTML = data.reverse().map(c => `
+                list.innerHTML = data.map(c => `
                     <div class="comment-item">
                         <div class="comment-author">${esc(c.name)}</div>
                         <div class="comment-text">${esc(c.text)}</div>
                     </div>
                 `).join('');
             } catch (e) {
-                list.innerHTML = '<p style="color:var(--danger); font-size:12px;">Ошибка сервера</p>';
+                list.innerHTML = '<p style="color:var(--danger); font-size:12px;">Ошибка загрузки</p>';
             }
         }
 
         async function postComment() {
             const txt = document.getElementById('comment-text').value.trim();
             if (!txt) return showToast('Введите текст!');
-            const name = profile.nickname || 'Аноним';
+            const name = (currentUser && currentUser.username) || 'Аноним';
             
             try {
-                const res = await fetch('/api/comments', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, text: txt })
-                });
-                if (res.ok) {
-                    document.getElementById('comment-text').value = '';
-                    loadComments();
-                    showToast('Отзыв добавлен!');
-                } else {
-                    showToast('Ошибка сервера');
-                }
+                const { error } = await supabase
+                    .from('comments')
+                    .insert([{ name: name, text: txt }]);
+                
+                if (error) throw error;
+                
+                document.getElementById('comment-text').value = '';
+                loadComments();
+                showToast('Отзыв добавлен!');
             } catch (e) {
-                showToast('Нет связи с сервером');
+                showToast('Ошибка при отправке');
             }
         }
 
+        // =============== ИГРОВОЙ ЛАУНЧЕР ===============
         async function enterFullscreen() {
             const ov = document.getElementById('launcher-overlay');
             try {
@@ -541,7 +682,8 @@
             });
         })();
 
-        renderStore(); updateUI(); renderProfile();
+        // =============== СТАРТ ===============
+        tryAutoLogin();
         setInterval(updateUI, 60000);
 
         (function boot() {
