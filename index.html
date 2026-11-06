@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -33,6 +33,7 @@
         .page.active { display: block; }
         .game-card { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; margin-bottom: 15px; }
         
+        /* Постер */
         .poster { width: 100%; aspect-ratio: 16 / 9; background-color: #0f1420; position: relative; cursor: pointer; overflow: hidden; }
         .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .web-tag { position: absolute; top: 10px; right: 10px; background: var(--accent); color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px var(--accent); z-index: 2; }
@@ -43,6 +44,7 @@
         .btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; text-align: center; }
         .btn:disabled { background: #1f293d; color: var(--text-muted); cursor: not-allowed; }
         
+        /* Лаунчер */
         #launcher-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 9999; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #launcher-overlay.open { display: block; }
         #launcher-iframe { width: 100%; height: 100%; border: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -59,6 +61,7 @@
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translate(-50%, 100px); background: #1e192d; color: white; padding: 12px 24px; border-radius: 20px; border: 1px solid var(--accent); opacity: 0; transition: all 0.3s; z-index: 10000; text-align: center; font-weight: bold; pointer-events: none; }
         .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
+        /* Профиль */
         .neon-card { background: linear-gradient(160deg, #151b2c 0%, #0a0e17 100%); border: 1px solid var(--accent); border-radius: 16px; padding: 20px; box-shadow: 0 0 26px rgba(168,85,247,.28), inset 0 0 34px rgba(168,85,247,.07); }
         .prof-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
         .prof-avatar-wrapper { position: relative; width: 72px; height: 72px; cursor: pointer; flex-shrink: 0; }
@@ -78,6 +81,7 @@
         .stat-row b { color: var(--text-main); font-size: 15px; }
         #prof-balance { color: var(--success); }
 
+        /* Комментарии */
         .comments-section { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid #1e293b; margin-top: 15px; }
         .comments-section h3 { font-size: 16px; margin-bottom: 15px; color: var(--accent); }
         .comment-item { background: #1e293b; border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
@@ -87,6 +91,7 @@
         .comment-input-area textarea { width: 100%; background: #1e293b; border: 1px solid #334155; color: var(--text-main); padding: 10px; border-radius: 8px; resize: none; outline: none; }
         .comment-input-area textarea:focus { border-color: var(--accent); }
 
+        /* Модальное окно авторизации */
         #auth-screen { position: fixed; inset: 0; z-index: 15000; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
         #auth-screen.show { display: flex; }
         .auth-box { width: 100%; max-width: 380px; background: var(--bg-card); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; box-shadow: 0 0 40px rgba(168,85,247,.35); position: relative; }
@@ -97,6 +102,7 @@
         .auth-tab.active { background: var(--accent); color: white; }
         .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin-bottom: 10px; min-height: 18px; }
 
+        /* Сплэш */
         #boot { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity .5s; }
         #boot.hide { opacity: 0; pointer-events: none; }
         .boot-logo-wrap { position: relative; overflow: hidden; padding: 10px 18px; animation: bootGlow 1s ease 1.5s both; }
@@ -133,6 +139,7 @@
             b.addEventListener('touchstart', done);
             setTimeout(done, 2800);
         })();
+        // Блокировка вибрации и системных меню
         window.navigator.vibrate = function() { return false; };
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('selectstart', event => event.preventDefault());
@@ -182,11 +189,16 @@
                         <div class="prof-avatar-big">
                             <img id="prof-avatar-img" src="" style="display:none;" alt="Аватар">
                             <div id="prof-avatar-txt">
-                                <svg viewBox="0 0 24 24" width="40" height="40" fill="#6b7280"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                <svg viewBox="0 0 24 24" width="40" height="40" fill="#6b7280">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
                             </div>
                         </div>
                         <div class="prof-avatar-camera">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
                         </div>
                     </div>
                     <div>
@@ -216,9 +228,12 @@
                 <div class="game-view-title" style="font-size:24px; font-weight:bold; margin-bottom:10px;">EvoWorld.io</div>
                 <div style="color:#9ca3af; font-size:14px; margin-bottom:20px;">Официальный мультиплеерный хит! Эволюционируй среди реальных игроков, пей воду и выживай.</div>
                 <div id="action-zone"></div>
+                
                 <div class="comments-section">
                     <h3>💬 Отзывы игроков</h3>
-                    <div id="comments-list"><p style="color:var(--text-muted); font-size:12px;">Загрузка комментариев...</p></div>
+                    <div id="comments-list">
+                        <p style="color:var(--text-muted); font-size:12px;">Загрузка комментариев...</p>
+                    </div>
                     <div class="comment-input-area">
                         <textarea id="comment-text" rows="2" placeholder="Напиши свой отзыв..."></textarea>
                         <button class="btn" style="background:var(--accent); padding:8px; font-size:12px;" onclick="postComment()">Отправить</button>
@@ -247,9 +262,8 @@
     </nav>
 
     <script>
-        // ИМЯ ТВОЕЙ КАРТИНКИ, КОТОРУЮ ТЫ ЗАГРУЗИЛ НА GITHUB (рядом с index.html)
-        const HQ_IMAGE = 'poster.jpg'; 
-
+        // ТЕПЕРЬ КАРТИНКА БЕРЕТСЯ ИЗ ТВОЕГО РЕПОЗИТОРИЯ GITHUB
+        const HQ_IMAGE = 'maxresdefault.jpg'; 
         const games = [{ id: 'evoworld', title: 'EvoWorld.io (FlyOrDie.io)', desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков, пей воду, ешь добычу и берегись хищников.' }];
 
         let token = localStorage.getItem('ludara_token');
@@ -264,6 +278,7 @@
         let gameOpen = false;
         let ignorePop = false;
 
+        // Универсальная функция для защищенных запросов к серверу
         async function api(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = 'Bearer ' + token;
