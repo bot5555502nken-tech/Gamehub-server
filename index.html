@@ -43,7 +43,6 @@
         .btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; text-align: center; }
         .btn:disabled { background: #1f293d; color: var(--text-muted); cursor: not-allowed; }
         
-        /* Лаунчер */
         #launcher-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 9999; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #launcher-overlay.open { display: block; }
         #launcher-iframe { width: 100%; height: 100%; border: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -362,16 +361,17 @@
             document.getElementById('auth-submit').disabled = true;
 
             try {
-                let userData = null;
-
+                // ================= РЕГИСТРАЦИЯ =================
                 if (authMode === 'register') {
                     const { data: existing, error: checkError } = await supabaseClient.from('users').select('id').eq('username', username).maybeSingle();
+                    
                     if (checkError) {
                         errEl.innerText = 'Ошибка проверки: ' + checkError.message;
                         document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
                         document.getElementById('auth-submit').disabled = false;
                         return;
                     }
+                    
                     if (existing) { 
                         errEl.innerText = 'Этот никнейм занят'; 
                         document.getElementById('auth-submit').innerText = 'Зарегистрироваться'; 
@@ -379,6 +379,7 @@
                         return; 
                     }
                     
+                    // Создаем пользователя и СРАЗУ берем его данные
                     const { data: newUser, error: insertError } = await supabaseClient
                         .from('users')
                         .insert([{ username, password, balance: 0, owned: [], last_claim: 0 }])
@@ -386,13 +387,17 @@
                         .single();
 
                     if (insertError) {
-                        errEl.innerText = 'Ошибка регистрации: ' + insertError.message;
+                        errEl.innerText = 'Ошибка БД: ' + insertError.message;
                         document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
                         document.getElementById('auth-submit').disabled = false;
                         return;
                     }
-                    userData = newUser;
-                } else {
+
+                    // Если дошли сюда, значит регистрация прошла успешно
+                    currentUser = newUser;
+                } 
+                // ================= ВХОД =================
+                else {
                     const { data, error } = await supabaseClient
                         .from('users')
                         .select('*')
@@ -412,10 +417,11 @@
                         document.getElementById('auth-submit').disabled = false; 
                         return; 
                     }
-                    userData = data;
+                    
+                    currentUser = data;
                 }
 
-                currentUser = userData;
+                // === ЕСЛИ МЫ ЗДЕСЬ, ЗНАЧИТ ВСЕ ОК (И РЕГИСТРАЦИЯ, И ВХОД) ===
                 balance = currentUser.balance || 0;
                 owned = currentUser.owned || [];
                 lastClaim = currentUser.last_claim || 0;
@@ -425,8 +431,9 @@
                 hideAuth();
                 updateUI(); renderStore(); updateAuthUI();
                 showToast(authMode === 'register' ? 'Аккаунт создан!' : 'Вы успешно вошли!');
+                
             } catch (e) {
-                errEl.innerText = 'Ошибка: ' + (e.message || 'неизвестно');
+                errEl.innerText = 'Системная ошибка: ' + (e.message || 'неизвестно');
                 document.getElementById('auth-submit').innerText = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
                 document.getElementById('auth-submit').disabled = false;
             }
