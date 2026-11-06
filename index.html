@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>GameHub</title>
+    <title>Ludara</title>
     <style>
         :root {
             --bg-dark: #080b10;
@@ -106,13 +106,13 @@
 
     <div id="boot">
         <div class="boot-logo-wrap">
-            <div class="boot-logo"><span class="boot-g">G</span><span class="boot-rest">ameHub</span></div>
+            <div class="boot-logo"><span class="boot-g">L</span><span class="boot-rest">udara</span></div>
         </div>
         <div class="boot-bar"><i></i></div>
     </div>
 
     <header>
-        <div class="logo">GameHub</div>
+        <div class="logo">Ludara</div>
         <div class="wallet-zone">
             <div class="wallet">Баланс: <span id="balance">0</span> NC</div>
             <button class="bonus-btn" id="bonus-btn" onclick="claimBonus()">Забрать 10 NappyCoins</button>
@@ -416,7 +416,6 @@
             loadComments();
         }
 
-        // ===== Комментарии =====
         async function loadComments() {
             const list = document.getElementById('comments-list');
             list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Загрузка...</p>';
