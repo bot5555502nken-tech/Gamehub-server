@@ -2,12 +2,12 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Для Vercel используем временную папку /tmp
-const COMMENTS_FILE = '/tmp/comments.json';
+const COMMENTS_FILE = path.join(__dirname, 'comments.json');
 
 app.get('/api/comments', (req, res) => {
     fs.readFile(COMMENTS_FILE, 'utf8', (err, data) => {
@@ -33,5 +33,4 @@ app.post('/api/comments', (req, res) => {
     });
 });
 
-// ВАЖНО: Для Vercel экспортируем app, а не вызываем app.listen
-module.exports = app;
+app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
