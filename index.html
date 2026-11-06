@@ -133,7 +133,6 @@
             b.addEventListener('touchstart', done);
             setTimeout(done, 2800);
         })();
-
         window.navigator.vibrate = function() { return false; };
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('selectstart', event => event.preventDefault());
@@ -183,16 +182,11 @@
                         <div class="prof-avatar-big">
                             <img id="prof-avatar-img" src="" style="display:none;" alt="Аватар">
                             <div id="prof-avatar-txt">
-                                <svg viewBox="0 0 24 24" width="40" height="40" fill="#6b7280">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
+                                <svg viewBox="0 0 24 24" width="40" height="40" fill="#6b7280"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                             </div>
                         </div>
                         <div class="prof-avatar-camera">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                                <circle cx="12" cy="13" r="4"></circle>
-                            </svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                         </div>
                     </div>
                     <div>
@@ -222,12 +216,9 @@
                 <div class="game-view-title" style="font-size:24px; font-weight:bold; margin-bottom:10px;">EvoWorld.io</div>
                 <div style="color:#9ca3af; font-size:14px; margin-bottom:20px;">Официальный мультиплеерный хит! Эволюционируй среди реальных игроков, пей воду и выживай.</div>
                 <div id="action-zone"></div>
-                
                 <div class="comments-section">
                     <h3>💬 Отзывы игроков</h3>
-                    <div id="comments-list">
-                        <p style="color:var(--text-muted); font-size:12px;">Загрузка комментариев...</p>
-                    </div>
+                    <div id="comments-list"><p style="color:var(--text-muted); font-size:12px;">Загрузка комментариев...</p></div>
                     <div class="comment-input-area">
                         <textarea id="comment-text" rows="2" placeholder="Напиши свой отзыв..."></textarea>
                         <button class="btn" style="background:var(--accent); padding:8px; font-size:12px;" onclick="postComment()">Отправить</button>
@@ -255,17 +246,13 @@
         <div class="nav-item" id="tab-profile" onclick="switchTab('profile')">Профиль</div>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://ifwwbiutqjzutzczzkzg.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmd3diaXV0cWp6dXR6Y3p6a3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5MzU3NjAsImV4cCI6MjEwOTUxMTc2MH0.cbH4RDTn715eSB2uZgLPRyehl32ZEa7SpF-o6RRQ4tc';
-        
-        let supabaseClient = null;
-        if (window.supabase) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ИМЯ ТВОЕЙ КАРТИНКИ, КОТОРУЮ ТЫ ЗАГРУЗИЛ НА GITHUB (рядом с index.html)
+        const HQ_IMAGE = 'poster.jpg'; 
 
-        const HQ_IMAGE = 'https://i.postimg.cc/RhqLK1PD/maxresdefault.jpg';
         const games = [{ id: 'evoworld', title: 'EvoWorld.io (FlyOrDie.io)', desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков, пей воду, ешь добычу и берегись хищников.' }];
 
+        let token = localStorage.getItem('ludara_token');
         let currentUser = null;
         let authMode = 'login';
         let balance = 0;
@@ -277,12 +264,34 @@
         let gameOpen = false;
         let ignorePop = false;
 
-        // ФУНКЦИЯ ШИФРОВАНИЯ ПАРОЛЯ (SHA-256)
-        async function hashPassword(password) {
-            const msgBuffer = new TextEncoder().encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        async function api(endpoint, options = {}) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+            
+            const res = await fetch('/api/' + endpoint, { ...options, headers });
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.error || 'Ошибка сервера');
+            return data;
+        }
+
+        async function init() {
+            if (token) {
+                try {
+                    currentUser = await api('user');
+                    balance = currentUser.balance || 0;
+                    owned = currentUser.owned || [];
+                    lastClaim = currentUser.last_claim || 0;
+                    profile.nickname = currentUser.username;
+                } catch (e) {
+                    token = null;
+                    localStorage.removeItem('ludara_token');
+                    loadGuestState();
+                }
+            } else {
+                loadGuestState();
+            }
+            updateUI(); renderStore(); updateAuthUI();
         }
 
         function loadGuestState() {
@@ -297,29 +306,6 @@
             localStorage.setItem('ludara_guest_balance', balance.toString());
             localStorage.setItem('ludara_guest_owned', JSON.stringify(owned));
             localStorage.setItem('ludara_guest_last_claim', lastClaim.toString());
-        }
-
-        async function init() {
-            const savedUser = localStorage.getItem('ludara_user');
-            if (savedUser && supabaseClient) {
-                try {
-                    const { data } = await supabaseClient.from('users').select('*').eq('username', savedUser).maybeSingle();
-                    if (data) {
-                        currentUser = data;
-                        balance = currentUser.balance || 0;
-                        owned = currentUser.owned || [];
-                        lastClaim = currentUser.last_claim || 0;
-                        profile.nickname = currentUser.username;
-                    } else {
-                        loadGuestState();
-                    }
-                } catch (e) {
-                    loadGuestState();
-                }
-            } else {
-                loadGuestState();
-            }
-            updateUI(); renderStore(); updateAuthUI();
         }
 
         function updateAuthUI() {
@@ -362,84 +348,31 @@
             const errEl = document.getElementById('auth-error');
             errEl.innerText = '';
 
-            if (!supabaseClient) { errEl.innerText = 'Нет связи с сервером'; return; }
             if (!username || !password) { errEl.innerText = 'Заполни ник и пароль'; return; }
-
             document.getElementById('auth-submit').innerText = 'Загрузка...';
             document.getElementById('auth-submit').disabled = true;
 
             try {
-                // ШИФРУЕМ ПАРОЛЬ ПЕРЕД ОТПРАВКОЙ
-                const hashedPassword = await hashPassword(password);
+                const endpoint = authMode === 'register' ? 'register' : 'login';
+                const data = await api(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
 
-                // ================= РЕГИСТРАЦИЯ =================
-                if (authMode === 'register') {
-                    const { data: existing, error: checkError } = await supabaseClient.from('users').select('id').eq('username', username).maybeSingle();
-                    
-                    if (checkError) {
-                        errEl.innerText = 'Ошибка проверки: ' + checkError.message;
-                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
-                        document.getElementById('auth-submit').disabled = false;
-                        return;
-                    }
-                    
-                    if (existing) { 
-                        errEl.innerText = 'Этот никнейм занят'; 
-                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться'; 
-                        document.getElementById('auth-submit').disabled = false; 
-                        return; 
-                    }
-                    
-                    const { data: newUser, error: insertError } = await supabaseClient
-                        .from('users')
-                        .insert([{ username, password: hashedPassword, balance: 0, owned: [], last_claim: 0 }])
-                        .select()
-                        .single();
-
-                    if (insertError) {
-                        errEl.innerText = 'Ошибка БД: ' + insertError.message;
-                        document.getElementById('auth-submit').innerText = 'Зарегистрироваться';
-                        document.getElementById('auth-submit').disabled = false;
-                        return;
-                    }
-                    currentUser = newUser;
-                } 
-                // ================= ВХОД =================
-                else {
-                    const { data, error } = await supabaseClient
-                        .from('users')
-                        .select('*')
-                        .eq('username', username)
-                        .eq('password', hashedPassword) // ИЩЕМ ЗАШИФРОВАННЫЙ ПАРОЛЬ
-                        .maybeSingle();
-
-                    if (error) {
-                        errEl.innerText = 'Ошибка БД: ' + error.message;
-                        document.getElementById('auth-submit').innerText = 'Войти';
-                        document.getElementById('auth-submit').disabled = false;
-                        return;
-                    }
-                    if (!data) { 
-                        errEl.innerText = 'Неверный ник или пароль'; 
-                        document.getElementById('auth-submit').innerText = 'Войти'; 
-                        document.getElementById('auth-submit').disabled = false; 
-                        return; 
-                    }
-                    currentUser = data;
-                }
-
+                token = data.token;
+                localStorage.setItem('ludara_token', token);
+                
+                currentUser = data.user;
                 balance = currentUser.balance || 0;
                 owned = currentUser.owned || [];
                 lastClaim = currentUser.last_claim || 0;
                 profile.nickname = currentUser.username;
                 
-                localStorage.setItem('ludara_user', username);
                 hideAuth();
                 updateUI(); renderStore(); updateAuthUI();
                 showToast(authMode === 'register' ? 'Аккаунт создан!' : 'Вы успешно вошли!');
-                
             } catch (e) {
-                errEl.innerText = 'Системная ошибка: ' + (e.message || 'неизвестно');
+                errEl.innerText = e.message;
                 document.getElementById('auth-submit').innerText = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
                 document.getElementById('auth-submit').disabled = false;
             }
@@ -447,20 +380,11 @@
 
         function logout() {
             currentUser = null;
-            localStorage.removeItem('ludara_user');
+            token = null;
+            localStorage.removeItem('ludara_token');
             loadGuestState();
             updateUI(); updateAuthUI();
             showToast('Вы вышли из аккаунта');
-        }
-
-        async function saveUser() {
-            if (currentUser && supabaseClient) {
-                try {
-                    await supabaseClient.from('users').update({ balance, owned, last_claim: lastClaim }).eq('username', currentUser.username);
-                } catch (e) { console.log('Save error', e); }
-            } else {
-                saveGuestState();
-            }
         }
 
         function showToast(msg) {
@@ -488,15 +412,20 @@
             if (pb) pb.innerText = balance;
         }
 
-        function claimBonus() {
+        async function claimBonus() {
             if (!currentUser) {
                 showToast('Войдите в аккаунт, чтобы получить бонус!');
                 showAuth();
                 return;
             }
-            balance += 10; lastClaim = Date.now();
-            saveUser();
-            updateUI(); showToast('+10 NappyCoins успешно начислены!');
+            try {
+                const data = await api('claim-bonus', { method: 'POST' });
+                balance = data.balance;
+                lastClaim = data.last_claim;
+                updateUI(); showToast('+10 NappyCoins успешно начислены!');
+            } catch (e) {
+                showToast(e.message);
+            }
         }
 
         function switchTab(tab) {
@@ -554,9 +483,18 @@
             });
         }
 
-        function addToLib(id) {
-            if(!owned.includes(id)) owned.push(id);
-            saveUser();
+        async function addToLib(id) {
+            if(!owned.includes(id)) {
+                if (currentUser) {
+                    try {
+                        const data = await api('add-game', { method: 'POST', body: JSON.stringify({ gameId: id }) });
+                        owned = data.owned;
+                    } catch (e) { showToast(e.message); return; }
+                } else {
+                    owned.push(id);
+                    saveGuestState();
+                }
+            }
             showToast('Добавлено в библиотеку!'); renderStore();
         }
 
@@ -608,10 +546,8 @@
         async function loadComments() {
             const list = document.getElementById('comments-list');
             list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Загрузка...</p>';
-            if (!supabaseClient) { list.innerHTML = '<p style="color:var(--danger); font-size:12px;">Нет связи</p>'; return; }
             try {
-                const { data, error } = await supabaseClient.from('comments').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
+                const data = await api('comments');
                 if (!data || data.length === 0) { list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Пока нет отзывов. Будь первым!</p>'; return; }
                 list.innerHTML = data.map(c => `
                     <div class="comment-item">
@@ -625,12 +561,11 @@
             if (!currentUser) { showToast('Войдите, чтобы писать отзывы!'); showAuth(); return; }
             const txt = document.getElementById('comment-text').value.trim();
             if (!txt) return showToast('Введите текст!');
-            const name = currentUser.username;
             try {
-                await supabaseClient.from('comments').insert([{ name, text: txt }]);
+                await api('comments', { method: 'POST', body: JSON.stringify({ text: txt }) });
                 document.getElementById('comment-text').value = '';
                 loadComments(); showToast('Отзыв добавлен!');
-            } catch (e) { showToast('Ошибка при отправке'); }
+            } catch (e) { showToast(e.message); }
         }
 
         async function enterFullscreen() {
