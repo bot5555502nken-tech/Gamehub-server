@@ -31,7 +31,6 @@
         .page.active { display: block; }
         .game-card { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; margin-bottom: 15px; }
         
-        /* Постер */
         .poster { width: 100%; aspect-ratio: 16 / 9; background-color: #0f1420; position: relative; cursor: pointer; overflow: hidden; }
         .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .web-tag { position: absolute; top: 10px; right: 10px; background: var(--accent); color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px var(--accent); z-index: 2; }
@@ -42,7 +41,6 @@
         .btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; text-align: center; }
         .btn:disabled { background: #1f293d; color: var(--text-muted); cursor: not-allowed; }
         
-        /* Лаунчер */
         #launcher-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 9999; }
         #launcher-overlay.open { display: block; }
         #launcher-iframe { width: 100%; height: 100%; border: none; }
@@ -59,23 +57,18 @@
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translate(-50%, 100px); background: #1e192d; color: white; padding: 12px 24px; border-radius: 20px; border: 1px solid var(--accent); opacity: 0; transition: all 0.3s; z-index: 10000; text-align: center; font-weight: bold; pointer-events: none; }
         .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
-        /* Профиль */
         .neon-card { background: linear-gradient(160deg, #151b2c 0%, #0a0e17 100%); border: 1px solid var(--accent); border-radius: 16px; padding: 20px; box-shadow: 0 0 26px rgba(168,85,247,.28), inset 0 0 34px rgba(168,85,247,.07); }
         .prof-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
-        
         .prof-avatar-wrapper { position: relative; width: 72px; height: 72px; cursor: pointer; flex-shrink: 0; }
         .prof-avatar-big { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 30% 25%, #2a1e45, #0e0a18); border: 2px solid var(--accent); box-shadow: 0 0 18px rgba(168,85,247,.6); overflow: hidden; }
         .prof-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
-        
         .prof-avatar-camera { position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 999; box-shadow: 0 2px 8px rgba(0,0,0,0.8); }
-        
         .prof-name { font-size: 20px; font-weight: 800; }
         .prof-sub { font-size: 12px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
         .field { margin-bottom: 16px; }
         .field > label { display: block; font-size: 13px; color: #9ca3af; margin-bottom: 7px; font-weight: 600; }
         .field-input { width: 100%; background: #1e293b; border: 1px solid #334155; color: var(--text-main); padding: 11px 12px; border-radius: 8px; font-size: 14px; outline: none; }
         .field-input:focus { border-color: var(--accent); box-shadow: 0 0 12px rgba(168,85,247,.4); }
-        
         .stats { margin-top: 6px; border-top: 1px solid #1e293b; padding-top: 16px; }
         .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #1e293b; font-size: 14px; }
         .stat-row:last-child { border-bottom: none; }
@@ -83,7 +76,6 @@
         .stat-row b { color: var(--text-main); font-size: 15px; }
         #prof-balance { color: var(--success); }
 
-        /* Комментарии */
         .comments-section { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid #1e293b; margin-top: 15px; }
         .comments-section h3 { font-size: 16px; margin-bottom: 15px; color: var(--accent); }
         .comment-item { background: #1e293b; border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
@@ -93,7 +85,6 @@
         .comment-input-area textarea { width: 100%; background: #1e293b; border: 1px solid #334155; color: var(--text-main); padding: 10px; border-radius: 8px; resize: none; outline: none; }
         .comment-input-area textarea:focus { border-color: var(--accent); }
 
-        /* Сплэш */
         #boot { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity .5s; }
         #boot.hide { opacity: 0; pointer-events: none; }
         .boot-logo-wrap { position: relative; overflow: hidden; padding: 10px 18px; animation: bootGlow 1s ease 1.5s both; }
@@ -161,8 +152,7 @@
                 </div>
                 <div class="field">
                     <label>Никнейм</label>
-                    <input id="nick-input" class="field-input" maxlength="20" placeholder="Gamer_Nappy" autocomplete="off" 
-                           oninput="onNickInput(this)" onblur="onNickInput(this)" onchange="onNickInput(this)">
+                    <input id="nick-input" class="field-input" maxlength="20" placeholder="Gamer_Nappy" autocomplete="off" oninput="onNickInput(this)" onblur="onNickInput(this)" onchange="onNickInput(this)">
                 </div>
                 <input type="file" id="avatar-upload" accept="image/*" hidden onchange="handleAvatarUpload(this)">
                 
@@ -178,7 +168,6 @@
                 <div style="color:#9ca3af; font-size:14px; margin-bottom:20px;">Официальный мультиплеерный хит! Эволюционируй среди реальных игроков, пей воду и выживай.</div>
                 <div id="action-zone"></div>
                 
-                <!-- Блок комментариев -->
                 <div class="comments-section">
                     <h3>💬 Отзывы игроков</h3>
                     <div id="comments-list">
@@ -270,7 +259,7 @@
                 localStorage.setItem('gh_owned', JSON.stringify(owned));
                 localStorage.setItem('gh_last_claim', JSON.stringify(lastClaim));
             } catch (e) {
-                showToast('Не удалось сохранить (хранилище переполнено?)');
+                showToast('Не удалось сохранить');
             }
         }
 
@@ -361,7 +350,6 @@
             showToast('Добавлено в библиотеку!'); renderStore();
         }
 
-        // ===== Профиль =====
         function renderProfile() {
             const nick = document.getElementById('nick-input');
             if (nick && document.activeElement !== nick) {
@@ -408,11 +396,11 @@
                     renderProfile(); 
                     showToast('Фото профиля обновлено!');
                 } catch (e) { 
-                    showToast('Файл слишком большой, не сохранился'); 
+                    showToast('Файл слишком большой'); 
                 }
                 URL.revokeObjectURL(url); inp.value = '';
             };
-            img.onerror = () => { URL.revokeObjectURL(url); inp.value = ''; showToast('Не смог прочитать файл'); };
+            img.onerror = () => { URL.revokeObjectURL(url); inp.value = ''; showToast('Ошибка файла'); };
             img.src = url;
         }
 
@@ -428,7 +416,7 @@
             loadComments();
         }
 
-        // ===== Комментарии (Сервер) =====
+        // ===== Комментарии =====
         async function loadComments() {
             const list = document.getElementById('comments-list');
             list.innerHTML = '<p style="color:var(--text-muted); font-size:12px;">Загрузка...</p>';
@@ -446,7 +434,7 @@
                     </div>
                 `).join('');
             } catch (e) {
-                list.innerHTML = '<p style="color:var(--danger); font-size:12px;">Ошибка загрузки сервера</p>';
+                list.innerHTML = '<p style="color:var(--danger); font-size:12px;">Ошибка сервера</p>';
             }
         }
 
@@ -469,7 +457,7 @@
                     showToast('Ошибка сервера');
                 }
             } catch (e) {
-                showToast('Нет связи с сервером (проверьте деплой)');
+                showToast('Нет связи с сервером');
             }
         }
 
@@ -480,7 +468,6 @@
                 else if (ov.webkitRequestFullscreen) ov.webkitRequestFullscreen();
                 else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
             } catch (e) { }
-            try { window.scrollTo(0, 1); } catch (e) {}
         }
 
         function exitFullscreen() {
@@ -531,9 +518,7 @@
             iframe.src = 'about:blank'; iframe.style.display = 'none';
             
             if (!ignorePop) {
-                try {
-                    if (location.hash === '#play') history.back();
-                } catch (e) {}
+                try { if (location.hash === '#play') history.back(); } catch (e) {}
             }
             ignorePop = false;
         }
