@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +33,6 @@
         .page.active { display: block; }
         .game-card { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; margin-bottom: 15px; }
         
-        /* Постер */
         .poster { width: 100%; aspect-ratio: 16 / 9; background-color: #0f1420; position: relative; cursor: pointer; overflow: hidden; }
         .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .web-tag { position: absolute; top: 10px; right: 10px; background: var(--accent); color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px var(--accent); z-index: 2; }
@@ -44,7 +43,6 @@
         .btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; text-align: center; }
         .btn:disabled { background: #1f293d; color: var(--text-muted); cursor: not-allowed; }
         
-        /* Лаунчер */
         #launcher-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 9999; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #launcher-overlay.open { display: block; }
         #launcher-iframe { width: 100%; height: 100%; border: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -61,7 +59,6 @@
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translate(-50%, 100px); background: #1e192d; color: white; padding: 12px 24px; border-radius: 20px; border: 1px solid var(--accent); opacity: 0; transition: all 0.3s; z-index: 10000; text-align: center; font-weight: bold; pointer-events: none; }
         .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
-        /* Профиль */
         .neon-card { background: linear-gradient(160deg, #151b2c 0%, #0a0e17 100%); border: 1px solid var(--accent); border-radius: 16px; padding: 20px; box-shadow: 0 0 26px rgba(168,85,247,.28), inset 0 0 34px rgba(168,85,247,.07); }
         .prof-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
         .prof-avatar-wrapper { position: relative; width: 72px; height: 72px; cursor: pointer; flex-shrink: 0; }
@@ -81,7 +78,6 @@
         .stat-row b { color: var(--text-main); font-size: 15px; }
         #prof-balance { color: var(--success); }
 
-        /* Комментарии */
         .comments-section { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid #1e293b; margin-top: 15px; }
         .comments-section h3 { font-size: 16px; margin-bottom: 15px; color: var(--accent); }
         .comment-item { background: #1e293b; border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
@@ -91,7 +87,6 @@
         .comment-input-area textarea { width: 100%; background: #1e293b; border: 1px solid #334155; color: var(--text-main); padding: 10px; border-radius: 8px; resize: none; outline: none; }
         .comment-input-area textarea:focus { border-color: var(--accent); }
 
-        /* Модальное окно авторизации */
         #auth-screen { position: fixed; inset: 0; z-index: 15000; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
         #auth-screen.show { display: flex; }
         .auth-box { width: 100%; max-width: 380px; background: var(--bg-card); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; box-shadow: 0 0 40px rgba(168,85,247,.35); position: relative; }
@@ -102,7 +97,6 @@
         .auth-tab.active { background: var(--accent); color: white; }
         .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin-bottom: 10px; min-height: 18px; }
 
-        /* Сплэш */
         #boot { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity .5s; }
         #boot.hide { opacity: 0; pointer-events: none; }
         .boot-logo-wrap { position: relative; overflow: hidden; padding: 10px 18px; animation: bootGlow 1s ease 1.5s both; }
@@ -139,7 +133,6 @@
             b.addEventListener('touchstart', done);
             setTimeout(done, 2800);
         })();
-        // Блокировка вибрации и системных меню
         window.navigator.vibrate = function() { return false; };
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('selectstart', event => event.preventDefault());
@@ -225,8 +218,8 @@
         <div id="game-page" class="page">
             <div style="background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid #1e293b;">
                 <button class="btn" style="background:#374151; margin-bottom:15px; width:auto;" onclick="switchTab('store')">← Назад в Магазин</button>
-                <div class="game-view-title" style="font-size:24px; font-weight:bold; margin-bottom:10px;">EvoWorld.io</div>
-                <div style="color:#9ca3af; font-size:14px; margin-bottom:20px;">Официальный мультиплеерный хит! Эволюционируй среди реальных игроков, пей воду и выживай.</div>
+                <div class="game-view-title" id="game-detail-title" style="font-size:24px; font-weight:bold; margin-bottom:10px;"></div>
+                <div id="game-detail-desc" style="color:#9ca3af; font-size:14px; margin-bottom:20px;"></div>
                 <div id="action-zone"></div>
                 
                 <div class="comments-section">
@@ -246,7 +239,7 @@
     <div id="launcher-overlay">
         <div id="exit-gesture-zone" title=""></div>
         <div class="loader-container" id="loader-screen">
-            <div style="font-size: 24px; font-weight: bold;">Загрузка EvoWorld...</div>
+            <div id="loader-title" style="font-size: 24px; font-weight: bold;">Загрузка...</div>
             <div id="loader-percent" style="font-size: 18px; margin-top: 10px;">0%</div>
             <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
         </div>
@@ -262,9 +255,23 @@
     </nav>
 
     <script>
-        // ТЕПЕРЬ КАРТИНКА БЕРЕТСЯ ИЗ ТВОЕГО РЕПОЗИТОРИЯ GITHUB
-        const HQ_IMAGE = 'maxresdefault.jpg'; 
-        const games = [{ id: 'evoworld', title: 'EvoWorld.io (FlyOrDie.io)', desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков, пей воду, ешь добычу и берегись хищников.' }];
+        // ================= МАССИВ ИГР =================
+        const games = [
+            { 
+                id: 'evoworld', 
+                title: 'EvoWorld.io (FlyOrDie.io)', 
+                desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков, пей воду, ешь добычу и берегись хищников.', 
+                image: 'maxresdefault.jpg',
+                url: 'https://evoworld.io/'
+            },
+            { 
+                id: 'moomoo', 
+                title: 'MooMoo.io', 
+                desc: 'Выживай на бескрайних просторах, собирай ресурсы, строй базу и сражайся с другими игроками.', 
+                image: 'moomoo.jpg', // Загрузи картинку с таким именем на GitHub!
+                url: 'https://moomoo.io/' 
+            }
+        ];
 
         let token = localStorage.getItem('ludara_token');
         let currentUser = null;
@@ -277,8 +284,8 @@
         let loadTimer = null;
         let gameOpen = false;
         let ignorePop = false;
+        let currentGameUrl = ''; 
 
-        // Универсальная функция для защищенных запросов к серверу
         async function api(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -461,7 +468,7 @@
 
         function posterHTML(g, showTag) {
             return '<div class="poster" onclick="openGamePage(\'' + esc(g.id) + '\')">' +
-                '<img src="' + HQ_IMAGE + '" alt="' + esc(g.title) + '" loading="lazy" draggable="false">' +
+                '<img src="' + g.image + '" alt="' + esc(g.title) + '" loading="lazy" draggable="false">' +
                 (showTag ? '<div class="web-tag">WEB</div>' : '') + '</div>';
         }
 
@@ -547,6 +554,14 @@
         }
 
         function openGamePage(id) {
+            const game = games.find(g => g.id === id);
+            if (!game) return;
+
+            currentGameUrl = game.url;
+            document.getElementById('game-detail-title').innerText = game.title;
+            document.getElementById('game-detail-desc').innerText = game.desc;
+            document.getElementById('loader-title').innerText = 'Загрузка ' + game.title + '...';
+
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('game-page').classList.add('active');
             const zone = document.getElementById('action-zone');
@@ -616,7 +631,8 @@
                 if (p >= 100) {
                     p = 100; clearInterval(loadTimer); loadTimer = null;
                     document.getElementById('loader-screen').style.display = 'none';
-                    iframe.src = 'https://evoworld.io/'; iframe.style.display = 'block';
+                    iframe.src = currentGameUrl;
+                    iframe.style.display = 'block';
                 }
                 fill.style.width = p+'%'; pct.innerText = p+'%';
             }, 160);
@@ -651,4 +667,4 @@
         setInterval(updateUI, 60000);
     </script>
 </body>
-</html>
+</html> 
