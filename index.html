@@ -31,20 +31,37 @@
         .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
         .page { display: none; }
         .page.active { display: block; }
+        
+        /* Поиск и Фильтры */
+        .filter-section { margin-bottom: 20px; }
+        .search-input {
+            width: 100%; background: var(--bg-card); border: 1px solid #334155; color: var(--text-main);
+            padding: 12px 15px; border-radius: 10px; font-size: 14px; outline: none; margin-bottom: 12px;
+        }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(168,85,247,.3); }
+        
+        .filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .filter-btn {
+            background: var(--bg-card); color: var(--text-muted); border: 1px solid #334155;
+            padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
         .game-card { background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid #1e293b; margin-bottom: 15px; }
         
-        /* Постер */
         .poster { width: 100%; aspect-ratio: 16 / 9; background-color: #0f1420; position: relative; cursor: pointer; overflow: hidden; }
         .poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .web-tag { position: absolute; top: 10px; right: 10px; background: var(--accent); color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px var(--accent); z-index: 2; }
         
         .info { padding: 15px; }
         .title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
-        .desc { font-size: 13px; color: #9ca3af; margin-bottom: 15px; line-height: 1.4; }
+        .desc { font-size: 13px; color: #9ca3af; margin-bottom: 5px; line-height: 1.4; }
+        .stats-desc { font-size: 11px; color: var(--success); font-weight: bold; margin-bottom: 15px; }
         .btn { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 14px; text-align: center; }
         .btn:disabled { background: #1f293d; color: var(--text-muted); cursor: not-allowed; }
         
-        /* Лаунчер */
         #launcher-overlay { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 9999; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         #launcher-overlay.open { display: block; }
         #launcher-iframe { width: 100%; height: 100%; border: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -61,7 +78,6 @@
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translate(-50%, 100px); background: #1e192d; color: white; padding: 12px 24px; border-radius: 20px; border: 1px solid var(--accent); opacity: 0; transition: all 0.3s; z-index: 10000; text-align: center; font-weight: bold; pointer-events: none; }
         .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
-        /* Профиль */
         .neon-card { background: linear-gradient(160deg, #151b2c 0%, #0a0e17 100%); border: 1px solid var(--accent); border-radius: 16px; padding: 20px; box-shadow: 0 0 26px rgba(168,85,247,.28), inset 0 0 34px rgba(168,85,247,.07); }
         .prof-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
         .prof-avatar-wrapper { position: relative; width: 72px; height: 72px; cursor: pointer; flex-shrink: 0; }
@@ -81,7 +97,6 @@
         .stat-row b { color: var(--text-main); font-size: 15px; }
         #prof-balance { color: var(--success); }
 
-        /* Комментарии */
         .comments-section { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid #1e293b; margin-top: 15px; }
         .comments-section h3 { font-size: 16px; margin-bottom: 15px; color: var(--accent); }
         .comment-item { background: #1e293b; border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
@@ -91,7 +106,6 @@
         .comment-input-area textarea { width: 100%; background: #1e293b; border: 1px solid #334155; color: var(--text-main); padding: 10px; border-radius: 8px; resize: none; outline: none; }
         .comment-input-area textarea:focus { border-color: var(--accent); }
 
-        /* Модальное окно авторизации */
         #auth-screen { position: fixed; inset: 0; z-index: 15000; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
         #auth-screen.show { display: flex; }
         .auth-box { width: 100%; max-width: 380px; background: var(--bg-card); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; box-shadow: 0 0 40px rgba(168,85,247,.35); position: relative; }
@@ -102,7 +116,6 @@
         .auth-tab.active { background: var(--accent); color: white; }
         .auth-error { color: var(--danger); font-size: 13px; text-align: center; margin-bottom: 10px; min-height: 18px; }
 
-        /* Сплэш */
         #boot { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity .5s; }
         #boot.hide { opacity: 0; pointer-events: none; }
         .boot-logo-wrap { position: relative; overflow: hidden; padding: 10px 18px; animation: bootGlow 1s ease 1.5s both; }
@@ -176,11 +189,35 @@
 
     <div class="container">
         <div id="store" class="page active">
+            
+            <!-- НОВЫЙ БЛОК С ФИЛЬТРАМИ -->
+            <div class="filter-section">
+                <input type="text" id="search-input" class="search-input" placeholder="Поиск игры по названию..." oninput="updateSearch(this.value)">
+                
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: bold; text-transform: uppercase;">Жанры</div>
+                <div class="filter-row" id="genre-filters">
+                    <button class="filter-btn active" onclick="setGenre('all', this)">Все игры</button>
+                    <button class="filter-btn" onclick="setGenre('shooter', this)">Шутеры</button>
+                    <button class="filter-btn" onclick="setGenre('survival', this)">Выживание</button>
+                    <button class="filter-btn" onclick="setGenre('arcade', this)">Аркады</button>
+                    <button class="filter-btn" onclick="setGenre('puzzle', this)">Головоломки</button>
+                </div>
+
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px; margin-bottom: 5px; font-weight: bold; text-transform: uppercase;">Способ запуска</div>
+                <div class="filter-row" id="launch-filters">
+                    <button class="filter-btn active" onclick="setLaunch('all', this)">Любой</button>
+                    <button class="filter-btn" onclick="setLaunch('launcher', this)">В лаунчере</button>
+                    <button class="filter-btn" onclick="setLaunch('tab', this)">В новой вкладке</button>
+                </div>
+            </div>
+
             <div id="store-list"></div>
         </div>
+        
         <div id="library" class="page">
             <div id="library-list"></div>
         </div>
+        
         <div id="profile" class="page">
             <div class="neon-card" id="profile-card" style="display: none;">
                 <div class="prof-head">
@@ -261,28 +298,40 @@
     </nav>
 
     <script>
-        // ================= МАССИВ ИГР =================
+        // ================= ДАННЫЕ ИГР =================
+        // Добавлены поля genre (жанр) и launchType (как запускается)
         const games = [
             { 
-                id: 'evoworld', 
-                title: 'EvoWorld.io (FlyOrDie.io)', 
-                desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков, пей воду, ешь добычу и берегись хищников.', 
-                image: 'maxresdefault.jpg',
-                url: 'https://evoworld.io/'
+                id: 'evoworld', title: 'EvoWorld.io', desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков.', image: 'maxresdefault.jpg', url: 'https://evoworld.io/',
+                genre: 'survival', launchType: 'launcher'
             },
             { 
-                id: 'moomoo', 
-                title: 'MooMoo.io', 
-                desc: 'Выживай на бескрайних просторах, собирай ресурсы, строй базу и сражайся с другими игроками.', 
-                image: 'moomoo.jpg',
-                url: 'https://moomoo.io/' 
+                id: 'moomoo', title: 'MooMoo.io', desc: 'Выживай на бескрайних просторах, собирай ресурсы и строй базу.', image: 'moomoo.jpg', url: 'https://moomoo.io/',
+                genre: 'survival', launchType: 'launcher'
             },
             { 
-                id: 'geometrydash', 
-                title: 'Geometry Dash Demo', 
-                desc: 'Ритм-платформер, где нужно прыгать по шипам в такт музыке. Один неверный тап — и ты начинаешь заново.', 
-                image: 'geometrydash.jpg',
-                url: 'https://www.geometrydash.com/' 
+                id: 'geometrydash', title: 'Geometry Dash Demo', desc: 'Ритм-платформер, где нужно прыгать по шипам в такт музыке.', image: 'geometrydash.jpg', url: 'https://www.geometrydash.com/',
+                genre: 'arcade', launchType: 'launcher'
+            },
+            { 
+                id: 'krunker', title: 'Krunker.io', desc: 'Легендарный браузерный шутер от первого лица.', image: 'krunker.jpg', url: 'https://krunker.io/',
+                genre: 'shooter', launchType: 'tab'
+            },
+            { 
+                id: 'tetrio', title: 'Tetr.io', desc: 'Современный мультиплеерный Тетрис с рейтинговыми матчами.', image: 'tetrio.jpg', url: 'https://tetr.io/',
+                genre: 'puzzle', launchType: 'tab'
+            },
+            { 
+                id: 'deeeep', title: 'Deeeep.io', desc: 'Глубоководная эволюция: начни мелкой рыбешкой и стань вершиной цепи.', image: 'deeeep.jpg', url: 'https://deeeep.io/',
+                genre: 'survival', launchType: 'tab'
+            },
+            { 
+                id: 'surviv', title: 'Surviv.io', desc: 'Классическая королевская битва с видом сверху.', image: 'surviv.jpg', url: 'https://surviv.io/',
+                genre: 'shooter', launchType: 'tab'
+            },
+            { 
+                id: 'shellshock', title: 'ShellShockers.io', desc: 'Веселый шутер, где все персонажи — яйца.', image: 'shellshock.jpg', url: 'https://shellshock.io/',
+                genre: 'shooter', launchType: 'tab'
             }
         ];
 
@@ -293,6 +342,7 @@
         let owned = [];
         let lastClaim = 0;
         let profile = { nickname: 'Гость', avatar: '' };
+        let gameStats = {}; 
         
         let loadTimer = null;
         let gameOpen = false;
@@ -300,18 +350,26 @@
         let currentGameUrl = ''; 
         let currentGameId = '';
 
+        // Переменные для фильтров
+        let searchQuery = '';
+        let genreFilter = 'all';
+        let launchFilter = 'all';
+
         async function api(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = 'Bearer ' + token;
-            
             const res = await fetch('/api/' + endpoint, { ...options, headers });
             const data = await res.json();
-            
             if (!res.ok) throw new Error(data.error || 'Ошибка сервера');
             return data;
         }
 
         async function init() {
+            try {
+                const stats = await api('game-stats');
+                stats.forEach(s => gameStats[s.game_id] = s.adds_count);
+            } catch(e) { console.log('Ошибка статистики', e); }
+
             if (token) {
                 try {
                     currentUser = await api('user');
@@ -486,16 +544,52 @@
                 (showTag ? '<div class="web-tag">WEB</div>' : '') + '</div>';
         }
 
+        // ================= ЛОГИКА ФИЛЬТРОВ =================
+        function updateSearch(val) {
+            searchQuery = val.toLowerCase().trim();
+            renderStore();
+        }
+
+        function setGenre(genre, btn) {
+            genreFilter = genre;
+            document.querySelectorAll('#genre-filters .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderStore();
+        }
+
+        function setLaunch(launch, btn) {
+            launchFilter = launch;
+            document.querySelectorAll('#launch-filters .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderStore();
+        }
+
         function renderStore() {
             const list = document.getElementById('store-list'); list.innerHTML = '';
-            games.forEach(g => {
+            
+            // Фильтрация
+            let filteredGames = games.filter(g => {
+                const matchSearch = g.title.toLowerCase().includes(searchQuery);
+                const matchGenre = (genreFilter === 'all' || g.genre === genreFilter);
+                const matchLaunch = (launchFilter === 'all' || g.launchType === launchFilter);
+                return matchSearch && matchGenre && matchLaunch;
+            });
+
+            if (filteredGames.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-muted); text-align:center; margin-top:40px;">По вашему запросу ничего не найдено.</p>';
+                return;
+            }
+
+            filteredGames.forEach(g => {
                 const io = owned.includes(g.id);
+                const count = gameStats[g.id] || 0;
                 list.innerHTML += `
                     <div class="game-card">
                         ${posterHTML(g, true)}
                         <div class="info">
                             <div class="title" onclick="openGamePage('${g.id}')">${g.title}</div>
                             <div class="desc">${g.desc}</div>
+                            <div class="stats-desc">📥 Добавлено в библиотеки: ${count} раз</div>
                             <button class="btn" onclick="addToLib('${g.id}')" ${io?'disabled':''}>${io?'В библиотеке':'Забрать в библиотеку'}</button>
                         </div>
                     </div>`;
@@ -525,6 +619,7 @@
                     try {
                         const data = await api('add-game', { method: 'POST', body: JSON.stringify({ gameId: id }) });
                         owned = data.owned;
+                        gameStats[id] = (gameStats[id] || 0) + 1;
                     } catch (e) { showToast(e.message); return; }
                 } else {
                     owned.push(id);
@@ -583,7 +678,12 @@
             if(!owned.includes(id)) {
                 zone.innerHTML = '<p style="color:var(--danger); font-weight:bold; margin-bottom:15px;">🔒 Сначала добавьте игру в библиотеку!</p>';
             } else {
-                zone.innerHTML = '<button class="btn" style="background:var(--success);" onclick="startGame()">ИГРАТЬ (На весь экран)</button>';
+                // Если launchType = 'tab', делаем кнопку-ссылку
+                if (game.launchType === 'tab') {
+                    zone.innerHTML = `<a href="${currentGameUrl}" target="_blank" class="btn" style="background:var(--success); text-decoration:none; display:block;">ЗАПУСТИТЬ В НОВОЙ ВКЛАДКЕ</a>`;
+                } else {
+                    zone.innerHTML = '<button class="btn" style="background:var(--success);" onclick="startGame()">ИГРАТЬ (На весь экран)</button>';
+                }
             }
             loadComments();
         }
