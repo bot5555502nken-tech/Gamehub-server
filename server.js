@@ -3,6 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -13,7 +14,6 @@ app.use(express.static(__dirname));
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const JWT_SECRET = process.env.JWT_SECRET || 'ludara_super_secret_key';
 
-// Проверка токена
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -25,7 +25,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// РЕГИСТРАЦИЯ
+// РЕГИСТРАЦИЯ (всегда bcrypt для новых аккаунтов)
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Заполните все поля' });
@@ -44,27 +44,42 @@ app.post('/api/register', async (req, res) => {
     res.json({ token, user: { username: newUser.username, balance: newUser.balance, owned: newUser.owned, last_claim: newUser.last_claim } });
 });
 
-// ВХОД
+// ВХОД (поддерживает bcrypt и старый SHA-256)
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     const { data: user, error } = await supabase.from('users').select('*').eq('username', username).maybeSingle();
     if (error || !user) return res.status(400).json({ error: 'Неверный ник или пароль' });
     
-    const validPass = await bcrypt.compare(password, user.password);
+    let validPass = false;
+    
+    if (user.password && user.password.startsWith('$2')) {
+        // Новый формат (bcrypt)
+        validPass = await bcrypt.compare(password, user.password);
+    } else {
+        // Старый формат (SHA-256 в hex)
+        const sha256 = crypto.createHash('sha256').update(password).digest('hex');
+        validPass = (sha256 === user.password);
+        
+        // Если старый пароль подошел — автоматически апгрейдим до bcrypt
+        if (validPass) {
+            const newHash = await bcrypt.hash(password, 10);
+            await supabase.from('users').update({ password: newHash }).eq('username', user.username);
+        }
+    }
+    
     if (!validPass) return res.status(400).json({ error: 'Неверный ник или пароль' });
     
     const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { username: user.username, balance: user.balance, owned: user.owned, last_claim: user.last_claim } });
 });
 
-// ПОЛУЧИТЬ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ
+// ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ
 app.get('/api/user', authenticateToken, async (req, res) => {
     const { data, error } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
     if (error || !data) return res.status(404).json({ error: 'Пользователь не найден' });
     res.json({ username: data.username, balance: data.balance, owned: data.owned, last_claim: data.last_claim });
 });
 
-// ЗАБРАТЬ БОНУС
 app.post('/api/claim-bonus', authenticateToken, async (req, res) => {
     const { data: user } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
     const now = Date.now();
@@ -79,7 +94,6 @@ app.post('/api/claim-bonus', authenticateToken, async (req, res) => {
     res.json({ balance: updated.balance, last_claim: updated.last_claim });
 });
 
-// ДОБАВИТЬ ИГРУ В БИБЛИОТЕКУ
 app.post('/api/add-game', authenticateToken, async (req, res) => {
     const { gameId } = req.body;
     const { data: user } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
@@ -92,7 +106,6 @@ app.post('/api/add-game', authenticateToken, async (req, res) => {
     res.json({ owned });
 });
 
-// КОММЕНТАРИИ
 app.get('/api/comments', async (req, res) => {
     const { data, error } = await supabase.from('comments').select('*').order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
