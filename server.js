@@ -25,55 +25,40 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// РЕГИСТРАЦИЯ (всегда bcrypt для новых аккаунтов)
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Заполните все поля' });
-    
     const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
     if (existing) return res.status(400).json({ error: 'Никнейм занят' });
-    
     const hashedPassword = await bcrypt.hash(password, 10);
     const { data: newUser, error } = await supabase.from('users').insert([
         { username, password: hashedPassword, balance: 0, owned: [], last_claim: 0 }
     ]).select().single();
-    
     if (error) return res.status(500).json({ error: error.message });
-    
     const token = jwt.sign({ username: newUser.username }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { username: newUser.username, balance: newUser.balance, owned: newUser.owned, last_claim: newUser.last_claim } });
 });
 
-// ВХОД (поддерживает bcrypt и старый SHA-256)
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     const { data: user, error } = await supabase.from('users').select('*').eq('username', username).maybeSingle();
     if (error || !user) return res.status(400).json({ error: 'Неверный ник или пароль' });
-    
     let validPass = false;
-    
     if (user.password && user.password.startsWith('$2')) {
-        // Новый формат (bcrypt)
         validPass = await bcrypt.compare(password, user.password);
     } else {
-        // Старый формат (SHA-256 в hex)
         const sha256 = crypto.createHash('sha256').update(password).digest('hex');
         validPass = (sha256 === user.password);
-        
-        // Если старый пароль подошел — автоматически апгрейдим до bcrypt
         if (validPass) {
             const newHash = await bcrypt.hash(password, 10);
             await supabase.from('users').update({ password: newHash }).eq('username', user.username);
         }
     }
-    
     if (!validPass) return res.status(400).json({ error: 'Неверный ник или пароль' });
-    
     const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { username: user.username, balance: user.balance, owned: user.owned, last_claim: user.last_claim } });
 });
 
-// ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ
 app.get('/api/user', authenticateToken, async (req, res) => {
     const { data, error } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
     if (error || !data) return res.status(404).json({ error: 'Пользователь не найден' });
@@ -84,12 +69,10 @@ app.post('/api/claim-bonus', authenticateToken, async (req, res) => {
     const { data: user } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
     const now = Date.now();
     if (now - user.last_claim < 24 * 60 * 60 * 1000) return res.status(400).json({ error: 'Бонус еще не доступен' });
-    
     const { data: updated, error } = await supabase.from('users').update({
         balance: (user.balance || 0) + 10,
         last_claim: now
     }).eq('username', req.user.username).select().single();
-    
     if (error) return res.status(500).json({ error: error.message });
     res.json({ balance: updated.balance, last_claim: updated.last_claim });
 });
@@ -97,7 +80,6 @@ app.post('/api/claim-bonus', authenticateToken, async (req, res) => {
 app.post('/api/add-game', authenticateToken, async (req, res) => {
     const { gameId } = req.body;
     const { data: user } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
-    
     let owned = user.owned || [];
     if (!owned.includes(gameId)) {
         owned.push(gameId);
@@ -106,16 +88,20 @@ app.post('/api/add-game', authenticateToken, async (req, res) => {
     res.json({ owned });
 });
 
+// ОБНОВЛЕНО: теперь комментарии фильтруются по игре
 app.get('/api/comments', async (req, res) => {
-    const { data, error } = await supabase.from('comments').select('*').order('created_at', { ascending: false });
+    const { gameId } = req.query;
+    let query = supabase.from('comments').select('*').order('created_at', { ascending: false });
+    if (gameId) query = query.eq('game_id', gameId);
+    const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
     res.json(data);
 });
 
 app.post('/api/comments', authenticateToken, async (req, res) => {
-    const { text } = req.body;
+    const { text, gameId } = req.body;
     if (!text) return res.status(400).json({ error: 'Введите текст' });
-    await supabase.from('comments').insert([{ name: req.user.username, text }]);
+    await supabase.from('comments').insert([{ name: req.user.username, text, game_id: gameId || 'evoworld' }]);
     res.json({ success: true });
 });
 
