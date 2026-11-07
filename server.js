@@ -28,56 +28,35 @@ function authenticateToken(req, res, next) {
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Заполните все поля' });
-    
     const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
     if (existing) return res.status(400).json({ error: 'Никнейм занят' });
-    
     const hashedPassword = await bcrypt.hash(password, 10);
     const { data: newUser, error } = await supabase.from('users').insert([
         { username, password: hashedPassword, balance: 0, owned: [], last_claim: 0 }
     ]).select().single();
-    
     if (error) return res.status(500).json({ error: error.message });
-    
     const token = jwt.sign({ username: newUser.username }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { username: newUser.username, balance: newUser.balance, owned: newUser.owned, last_claim: newUser.last_claim } });
 });
 
-// ИСПРАВЛЕННЫЙ ВХОД (Поддержка bcrypt, SHA-256 и открытого текста)
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     const { data: user, error } = await supabase.from('users').select('*').eq('username', username).maybeSingle();
     if (error || !user) return res.status(400).json({ error: 'Неверный ник или пароль' });
-    
     let validPass = false;
-    let needsUpgrade = false; // Флаг: нужно ли обновить пароль до bcrypt
-    
-    // 1. Проверяем новый формат (bcrypt)
     if (user.password && user.password.startsWith('$2')) {
         validPass = await bcrypt.compare(password, user.password);
-    } 
-    // 2. Проверяем промежуточный формат (SHA-256, длина 64 символа)
-    else if (user.password && user.password.length === 64) {
+    } else if (user.password && user.password.length === 64) {
         const sha256 = crypto.createHash('sha256').update(password).digest('hex');
-        if (sha256 === user.password) {
-            validPass = true;
-            needsUpgrade = true;
-        }
-    } 
-    // 3. Проверяем самый старый формат (открытый текст)
-    else if (user.password === password) {
+        if (sha256 === user.password) { validPass = true; }
+    } else if (user.password === password) {
         validPass = true;
-        needsUpgrade = true;
     }
-    
     if (!validPass) return res.status(400).json({ error: 'Неверный ник или пароль' });
-    
-    // Если пароль был старым, но подошел — перезаписываем его в безопасный bcrypt
-    if (needsUpgrade) {
+    if (!user.password.startsWith('$2')) {
         const newHash = await bcrypt.hash(password, 10);
         await supabase.from('users').update({ password: newHash }).eq('username', user.username);
     }
-    
     const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { username: user.username, balance: user.balance, owned: user.owned, last_claim: user.last_claim } });
 });
@@ -92,16 +71,15 @@ app.post('/api/claim-bonus', authenticateToken, async (req, res) => {
     const { data: user } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
     const now = Date.now();
     if (now - user.last_claim < 24 * 60 * 60 * 1000) return res.status(400).json({ error: 'Бонус еще не доступен' });
-    
     const { data: updated, error } = await supabase.from('users').update({
         balance: (user.balance || 0) + 10,
         last_claim: now
     }).eq('username', req.user.username).select().single();
-    
     if (error) return res.status(500).json({ error: error.message });
     res.json({ balance: updated.balance, last_claim: updated.last_claim });
 });
 
+// ОБНОВЛЕНО: Теперь используем RPC (атомарный инкремент)
 app.post('/api/add-game', authenticateToken, async (req, res) => {
     const { gameId } = req.body;
     const { data: user } = await supabase.from('users').select('*').eq('username', req.user.username).maybeSingle();
@@ -110,8 +88,17 @@ app.post('/api/add-game', authenticateToken, async (req, res) => {
     if (!owned.includes(gameId)) {
         owned.push(gameId);
         await supabase.from('users').update({ owned }).eq('username', req.user.username);
+        
+        // Вызываем атомарную функцию в базе данных
+        await supabase.rpc('increment_game_count', { gid: gameId });
     }
     res.json({ owned });
+});
+
+app.get('/api/game-stats', async (req, res) => {
+    const { data, error } = await supabase.from('game_stats').select('*');
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
 });
 
 app.get('/api/comments', async (req, res) => {
