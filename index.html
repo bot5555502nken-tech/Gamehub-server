@@ -1,4 +1,4 @@
-   <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -132,7 +132,6 @@
         .boot-bar i { display: block; height: 100%; width: 40%; background: var(--accent); border-radius: 2px; animation: bootBar 1.1s ease-in-out .4s infinite; }
         @keyframes bootBar { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
         
-        /* Текст загрузки */
         .boot-loading-text { position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--text-muted); letter-spacing: 1px; }
     </style>
 </head>
@@ -285,11 +284,12 @@
     </nav>
 
     <script>
-        // Блокировка вибрации
+        // Блокировка вибрации и системных меню
         window.navigator.vibrate = function() { return false; };
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('selectstart', event => event.preventDefault());
 
+        // ================= МАССИВ ИГР =================
         const games = [
             { id: 'evoworld', title: 'EvoWorld.io', desc: 'Начни мелкой черной мухой, эволюционируй среди реальных игроков.', image: 'maxresdefault.jpg', url: 'https://evoworld.io/', genre: 'survival', launchType: 'launcher' },
             { id: 'moomoo', title: 'MooMoo.io', desc: 'Выживай на бескрайних просторах, собирай ресурсы и строй базу.', image: 'moomoo.jpg', url: 'https://moomoo.io/', genre: 'survival', launchType: 'launcher' },
@@ -335,7 +335,6 @@
                 }
             };
             
-            // Позволяем пропустить загрузку тапом, если что-то зависло
             if (b) {
                 b.addEventListener('click', done);
                 b.addEventListener('touchstart', done);
@@ -354,7 +353,7 @@
                 imageUrls.forEach(url => {
                     const img = new Image();
                     img.onload = checkDone;
-                    img.onerror = checkDone; // Если картинки нет, считаем что "загрузилась", чтобы не висеть вечно
+                    img.onerror = checkDone; 
                     img.src = url;
                 });
             }
@@ -366,15 +365,14 @@
                 }
                 if (loadedCount >= totalImages) {
                     clearTimeout(forceTimeout);
-                    setTimeout(done, 500); // Небольшая задержка, чтобы полоска успела дойти
+                    setTimeout(done, 500); 
                 }
             }
         }
 
-        // Вызываем предзагрузку СРАЗУ, как только загрузился скрипт
         preloadAndStart();
 
-        // ================= ОСТАЛЬНАЯ ЛОГИКА =================
+        // ================= ЛОГИКА =================
         async function api(endpoint, options = {}) {
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -583,6 +581,7 @@
             renderStore();
         }
 
+        // ================= ОТРИСОВКА МАГАЗИНА =================
         function renderStore() {
             const list = document.getElementById('store-list'); list.innerHTML = '';
             
@@ -608,7 +607,7 @@
                             <div class="title" onclick="openGamePage('${g.id}')">${g.title}</div>
                             <div class="desc">${g.desc}</div>
                             <div class="stats-desc">📥 Добавлено в библиотеки: ${count} раз</div>
-                            <button class="btn" onclick="addToLib('${g.id}')" ${io?'disabled':''}>${io?'В библиотеке':'Забрать в библиотеку'}</button>
+                            <button class="btn" id="btn-add-${g.id}" onclick="addToLib('${g.id}')" ${io?'disabled':''}>${io?'В библиотеке':'Забрать в библиотеку'}</button>
                         </div>
                     </div>`;
             });
@@ -631,20 +630,34 @@
             });
         }
 
+        // ================= ДОБАВЛЕНИЕ В БИБЛИОТЕКУ (АНТИ-СПАМ) =================
         async function addToLib(id) {
-            if(!owned.includes(id)) {
-                if (currentUser) {
-                    try {
-                        const data = await api('add-game', { method: 'POST', body: JSON.stringify({ gameId: id }) });
-                        owned = data.owned;
-                        gameStats[id] = (gameStats[id] || 0) + 1;
-                    } catch (e) { showToast(e.message); return; }
-                } else {
-                    owned.push(id);
-                    saveGuestState();
-                }
+            if (owned.includes(id)) return; // Если уже есть, ничего не делаем
+
+            const btn = document.getElementById('btn-add-' + id);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Загрузка...';
             }
-            showToast('Добавлено в библиотеку!'); renderStore();
+
+            if (currentUser) {
+                try {
+                    const data = await api('add-game', { method: 'POST', body: JSON.stringify({ gameId: id }) });
+                    owned = data.owned;
+                    gameStats[id] = (gameStats[id] || 0) + 1;
+                } catch (e) { 
+                    showToast(e.message); 
+                    if (btn) { btn.disabled = false; btn.innerText = 'Забрать в библиотеку'; }
+                    return; 
+                }
+            } else {
+                // Гостям не считаем статистику, просто добавляем локально
+                owned.push(id);
+                saveGuestState();
+            }
+            
+            showToast('Добавлено в библиотеку!'); 
+            renderStore();
         }
 
         function renderProfile() {
@@ -795,9 +808,9 @@
             });
         })();
 
-        // Запуск приложения
+        // Запуск
         init();
         setInterval(updateUI, 60000);
     </script>
 </body>
-</html>
+                   </html>
