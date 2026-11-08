@@ -320,7 +320,8 @@
             { id: 'ev', title: 'Ev.io', desc: 'Динамичный футуристичный шутер от первого лица, вдохновленный Halo.', image: 'ev.jpg', url: 'https://ev.io/', genre: 'shooter', launchType: 'tab' },
             { id: 'diep', title: 'Diep.io', desc: 'Танковая арена от создателя Agar.io: собирай опыт, прокачивай класс танка и доминируй на карте.', image: 'diep.jpg', url: 'https://diep.io/', genre: 'shooter', launchType: 'launcher' },
             { id: 'kirka', title: 'Kirka.io', desc: 'Соревновательный браузерный FPS с глубоким ганплеем, ранкедом и кастомизацией — ближе всего к «консольному» уровню в .io.', image: 'kirka.jpg', url: 'https://kirka.io/', genre: 'shooter', launchType: 'tab' },
-            { id: 'deadshot', title: 'Deadshot.io', desc: 'Динамичный тактический FPS в браузере: быстрые перестрелки, разные классы и упор на реакцию.', image: 'deadshot.jpg', url: 'https://deadshot.io/', genre: 'shooter', launchType: 'tab' }
+            { id: 'deadshot', title: 'Deadshot.io', desc: 'Динамичный тактический FPS в браузере: быстрые перестрелки, разные классы и упор на реакцию.', image: 'deadshot.jpg', url: 'https://deadshot.io/', genre: 'shooter', launchType: 'tab' },
+            { id: 'kour', title: 'Kour.io', desc: 'Многопользовательский FPS от Legion Platforms: быстрые арены, классы с уникальными способностями и режимы от Gun Game до Battle Royale.', image: 'kour.jpg', url: 'https://kour.io/', genre: 'shooter', launchType: 'launcher', exactFit: true }
         ];
 
         let token = localStorage.getItem('ludara_token');
@@ -776,13 +777,24 @@
         }
 
         function startGame() {
+            const game = games.find(g => g.id === currentGameId);
             const ov = document.getElementById('launcher-overlay');
+            const iframe = document.getElementById('launcher-iframe');
+
+            // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: для игр с exactFit (Kour.io) iframe строго по размеру экрана,
+            // без трюка +300px, иначе камера/вид съезжает в угол.
+            if (game && game.exactFit) {
+                iframe.style.height = '100%';
+            } else {
+                iframe.style.height = 'calc(100% + 300px)';
+            }
+
             ov.classList.add('open'); gameOpen = true; document.body.style.overflow = 'hidden';
             try { history.pushState({ ghGame: true }, '', '#play'); } catch (e) {}
             enterFullscreen();
             if (loadTimer) { clearInterval(loadTimer); loadTimer = null; }
             document.getElementById('loader-screen').style.display = 'flex';
-            const iframe = document.getElementById('launcher-iframe'); iframe.style.display = 'none';
+            iframe.style.display = 'none';
             const fill = document.getElementById('progress-fill'); const pct = document.getElementById('loader-percent');
             fill.style.width = '0%'; pct.innerText = '0%';
             
