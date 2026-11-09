@@ -321,7 +321,8 @@
             { id: 'diep', title: 'Diep.io', desc: 'Танковая арена от создателя Agar.io: собирай опыт, прокачивай класс танка и доминируй на карте.', image: 'diep.jpg', url: 'https://diep.io/', genre: 'shooter', launchType: 'launcher' },
             { id: 'kirka', title: 'Kirka.io', desc: 'Соревновательный браузерный FPS с глубоким ганплеем, ранкедом и кастомизацией — ближе всего к «консольному» уровню в .io.', image: 'kirka.jpg', url: 'https://kirka.io/', genre: 'shooter', launchType: 'tab' },
             { id: 'deadshot', title: 'Deadshot.io', desc: 'Динамичный тактический FPS в браузере: быстрые перестрелки, разные классы и упор на реакцию.', image: 'deadshot.jpg', url: 'https://deadshot.io/', genre: 'shooter', launchType: 'tab' },
-            { id: 'kour', title: 'Kour.io', desc: 'Многопользовательский FPS от Legion Platforms: быстрые арены, классы с уникальными способностями и режимы от Gun Game до Battle Royale.', image: 'kour.jpg', url: 'https://kour.io/', genre: 'shooter', launchType: 'launcher', exactFit: true }
+            { id: 'kour', title: 'Kour.io', desc: 'Многопользовательский FPS от Legion Platforms: быстрые арены, классы с уникальными способностями и режимы от Gun Game до Battle Royale.', image: 'kour.jpg', url: 'https://kour.io/', genre: 'shooter', launchType: 'launcher', exactFit: true },
+            { id: 'veck', title: 'Veck.io', desc: 'Быстрый 3D-шутер от первого лица: аркадные режимы, командные бои 1v1–4v4 и более 40 видов оружия. Оптимизирован под ПК.', image: 'veck.jpg', url: 'https://veck.io/', genre: 'shooter', launchType: 'launcher', exactFit: true }
         ];
 
         let token = localStorage.getItem('ludara_token');
@@ -781,8 +782,6 @@
             const ov = document.getElementById('launcher-overlay');
             const iframe = document.getElementById('launcher-iframe');
 
-            // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: для игр с exactFit (Kour.io) iframe строго по размеру экрана,
-            // без трюка +300px, иначе камера/вид съезжает в угол.
             if (game && game.exactFit) {
                 iframe.style.height = '100%';
             } else {
